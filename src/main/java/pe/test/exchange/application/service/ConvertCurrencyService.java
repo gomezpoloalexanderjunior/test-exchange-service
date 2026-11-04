@@ -1,0 +1,35 @@
+package pe.test.exchange.application.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import pe.test.exchange.application.dto.ConversionRequest;
+import pe.test.exchange.application.dto.ConversionResponse;
+import pe.test.exchange.application.mapper.ConversionMapper;
+import pe.test.exchange.domain.model.Conversion;
+import pe.test.exchange.domain.model.CurrencyCode;
+import pe.test.exchange.domain.model.ExchangeRate;
+import pe.test.exchange.domain.repository.ConversionRepository;
+import pe.test.exchange.domain.service.ExchangeRateProvider;
+
+import java.time.Clock;
+import java.time.Instant;
+
+@Service
+@RequiredArgsConstructor
+public class ConvertCurrencyService {
+
+    private final ExchangeRateProvider rateProvider;
+    private final ConversionRepository repository;
+    private final Clock clock;
+    private final ConversionMapper mapper;
+
+    public ConversionResponse convert(ConversionRequest request) {
+        CurrencyCode source = CurrencyCode.of(request.monedaOrigen());
+        CurrencyCode target = CurrencyCode.of(request.monedaDestino());
+        ExchangeRate rate = rateProvider.getRate(source, target);
+
+        Conversion conversion = Conversion.create(request.monto(), source, target, rate, Instant.now(clock));
+
+        return mapper.toResponse(repository.save(conversion));
+    }
+}

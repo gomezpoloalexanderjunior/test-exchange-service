@@ -16,11 +16,18 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 3000
+            read-timeout: 5000
 
 exchange-rate:
   api:
     base-url: https://v6.exchangerate-api.com/v6
-    key: "*****"
+    key: 3635bb7bf1393d87c4dd5155
 
 
 #Abre http://localhost:8080/h2-console
