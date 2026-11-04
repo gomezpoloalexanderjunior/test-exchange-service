@@ -8,10 +8,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 
-/**
- * Domain service holding the conversion rule: obtain the rate and build the
- * {@link Conversion}. It does not persist anything.
- */
 public class CurrencyConversionService {
 
     private final ExchangeRateProvider rateProvider;
