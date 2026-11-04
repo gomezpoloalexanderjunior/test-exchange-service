@@ -7,28 +7,22 @@ import pe.test.exchange.application.dto.ConversionResponse;
 import pe.test.exchange.application.mapper.ConversionMapper;
 import pe.test.exchange.domain.model.Conversion;
 import pe.test.exchange.domain.model.CurrencyCode;
-import pe.test.exchange.domain.model.ExchangeRate;
 import pe.test.exchange.domain.repository.ConversionRepository;
-import pe.test.exchange.domain.service.ExchangeRateProvider;
-
-import java.time.Clock;
-import java.time.Instant;
+import pe.test.exchange.domain.service.CurrencyConversionService;
 
 @Service
 @RequiredArgsConstructor
 public class ConvertCurrencyService {
 
-    private final ExchangeRateProvider rateProvider;
+    private final CurrencyConversionService conversionService;
     private final ConversionRepository repository;
-    private final Clock clock;
     private final ConversionMapper mapper;
 
     public ConversionResponse convert(ConversionRequest request) {
         CurrencyCode source = CurrencyCode.of(request.monedaOrigen());
         CurrencyCode target = CurrencyCode.of(request.monedaDestino());
-        ExchangeRate rate = rateProvider.getRate(source, target);
 
-        Conversion conversion = Conversion.create(request.monto(), source, target, rate, Instant.now(clock));
+        Conversion conversion = conversionService.convert(request.monto(), source, target);
 
         return mapper.toResponse(repository.save(conversion));
     }

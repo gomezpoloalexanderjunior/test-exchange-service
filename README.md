@@ -118,17 +118,17 @@ pe.test.exchange
 ├── domain
 │   ├── model           CurrencyCode, ExchangeRate (value objects) y Conversion (entidad)
 │   ├── exception       Excepciones de dominio
-│   ├── service         ExchangeRateProvider (puerto hacia el servicio externo)
+│   ├── service         CurrencyConversionService (servicio de dominio) y ExchangeRateProvider (puerto hacia el servicio externo)
 │   └── repository      ConversionRepository (puerto de persistencia)
 ├── application
 │   ├── controller      ConversionController y GlobalExceptionHandler
-│   ├── service         ConvertCurrencyService (caso de uso)
+│   ├── service         ConvertCurrencyService (caso de uso: orquesta, no contiene la regla)
 │   ├── dto             Request, Response y ErrorResponse
 │   └── mapper          ConversionMapper
 └── infrastructure
     ├── external        FeignExchangeRateProvider (adaptador sobre el cliente Feign)
     ├── persistence     ConversionRepositoryAdapter sobre Spring Data JPA
-    └── config          ClockConfig
+    └── config          ClockConfig y DomainServiceConfig (registra el servicio de dominio como bean)
 ```
 
 ## Decisiones de diseño
@@ -137,6 +137,7 @@ pe.test.exchange
 - **Value objects:** `CurrencyCode` normaliza (trim y mayúsculas) y valida el formato `^[A-Z]{3}$`. `ExchangeRate` exige una tasa mayor a cero. Un valor inválido no puede existir.
 - **Dinero con `BigDecimal`:** nunca se usa `double`. El `tipoCambio` se devuelve tal como lo entrega el servicio y el `montoConvertido` se redondea a 2 decimales con `RoundingMode.HALF_UP`.
 - **Entidad con fábrica:** `Conversion.create(...)` valida el monto y calcula el monto convertido; la regla de negocio queda en el dominio.
+- **Servicio de dominio vs. servicio de aplicación:** `CurrencyConversionService` (dominio) es la regla de conversión: pide la tasa al puerto `ExchangeRateProvider` y construye la `Conversion` con `Conversion.create(...)` y la hora del `Clock`; no persiste nada. `ConvertCurrencyService` (aplicación) solo orquesta: arma los `CurrencyCode`, llama al servicio de dominio, guarda con `ConversionRepository` y mapea la respuesta. El servicio de dominio no lleva anotaciones de Spring; se registra como bean desde `DomainServiceConfig` en infraestructura, así el dominio sigue libre de framework.
 - **Un solo formato de error:** `GlobalExceptionHandler` traduce cada excepción de dominio a `ErrorResponse` con el estado HTTP correcto. Los errores inesperados devuelven un mensaje genérico y el detalle solo va al log.
 - **Sin filtrar la API key:** el adaptador no propaga la excepción de Feign, porque su mensaje incluye la URL con la clave.
 - **`Clock` inyectado:** la fecha de la operación sale de un `Clock` (UTC), lo que permite probar con una fecha fija.
