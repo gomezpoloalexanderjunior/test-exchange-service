@@ -13,7 +13,7 @@ Microservicio en Java que consume el servicio público [ExchangeRate-API](https:
 ./mvnw spring-boot:run
 ```
 
-La aplicación levanta en `http://localhost:8080`.
+La aplicación levanta en `http://localhost:8789` (se puede cambiar con la variable de entorno `PORT`).
 
 La API key de ExchangeRate-API está configurada en `application.yaml` (`exchange-rate.api.key`), por lo que no hace falta definir variables de entorno.
 
@@ -25,11 +25,20 @@ La API key de ExchangeRate-API está configurada en `application.yaml` (`exchang
 
 Los tests no usan la red: el servicio externo se simula con mocks.
 
+## Documentación interactiva (Swagger UI)
+
+| Recurso | URL |
+|---|---|
+| Swagger UI | `http://localhost:8789/swagger-ui.html` |
+| OpenAPI (JSON) | `http://localhost:8789/v3/api-docs` |
+
+Para probar el endpoint sin Postman: abre Swagger UI, despliega `POST /api/conversion`, pulsa **Try it out** (el cuerpo ya viene con un ejemplo) y luego **Execute**.
+
 ## Base de datos H2
 
 | Parámetro | Valor |
 |---|---|
-| Consola | `http://localhost:8080/h2-console` |
+| Consola | `http://localhost:8789/h2-console` |
 | JDBC URL | `jdbc:h2:mem:testdb` |
 | Usuario | `sa` |
 | Password | `password` |
@@ -47,7 +56,7 @@ SELECT * FROM CONVERSIONS;
 Request:
 
 ```bash
-curl -X POST http://localhost:8080/api/conversion \
+curl -X POST http://localhost:8789/api/conversion \
   -H "Content-Type: application/json" \
   -d '{"monto":100,"monedaOrigen":"USD","monedaDestino":"PEN"}'
 ```
